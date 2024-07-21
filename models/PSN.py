@@ -116,7 +116,7 @@ class PSNv1(nn.Module):
                 sampled_feature = None
             grouped_feature = None
 
-        return sampled_points, grouped_points, sampled_feature, grouped_feature
+        return sampled_points, grouped_points, sampled_feature, grouped_feature, Q
 
 
 class PSN(nn.Module):
@@ -206,9 +206,42 @@ class PSN(nn.Module):
         x = self.mlp_convs[-1](x).transpose(1, 2)   # [B,s,m]
 
         Q = torch.sigmoid(x)  # [B, s, m]
+        #print("Q and Q.shape: ---------------------")
+        #print(Q)
+        #print(Q.shape)
+        #print("------ dim0:")
+        #print(torch.sum(Q,0))
+        #print("-----dim 1:")
+        #print(torch.sum(Q,1))
+        #print("-----dim2")
+        #print(torch.sum(Q,2))
+        #print("---------------------")
+
 
         _, grouped_indices = torch.topk(input=Q, k=self.n, dim=2)    # [B, s, n]
+        grouped_indices2 = grouped_indices.clone().detach()
+        unique_num = []
+        flattened_tensor = torch.flatten(grouped_indices2, start_dim=1, end_dim=-1)
+        for i in range(grouped_indices2.shape[0]):
+          unique1, _ = torch.unique(flattened_tensor[i], dim = 0, return_counts=True, sorted = False)
+          unique_num.append(unique1.shape[0]/m)
+        
+        unique_num = torch.mean(torch.Tensor(unique_num))
+        print()
+        print("Report on unique num: ")
+        print(unique_num)
+        print("---------------------")
+        
+
+          
+
+
+        #print("report index points :")
+        #print("----------------")
+        #print(grouped_indices.shape)
         grouped_points = index_points(coordinate, grouped_indices)  # [B,s,n,3]
+        #print(grouped_points.shape)
+        #print("------------------")
         if feature is not None:
             grouped_feature = index_points(feature, grouped_indices)  # [B,s,n,d]
             if not train:
@@ -232,7 +265,7 @@ class PSN(nn.Module):
                 sampled_feature = None
             grouped_feature = None
 
-        return sampled_points, grouped_points, sampled_feature, grouped_feature
+        return sampled_points, grouped_points, sampled_feature, grouped_feature, Q
 
 
 class PSNRadius(nn.Module):

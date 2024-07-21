@@ -1,3 +1,4 @@
 /data/*
 /log/*
+/log_backups/*
 /test.ipynb

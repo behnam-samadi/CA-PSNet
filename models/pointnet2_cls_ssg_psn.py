@@ -26,9 +26,16 @@ class get_model(nn.Module):
             xyz = xyz[:, :3, :]
         else:
             norm = None
-        l1_xyz, l1_points = self.sa1(xyz, norm, train)
-        l2_xyz, l2_points = self.sa2(l1_xyz, l1_points, train)
-        l3_xyz, l3_points = self.sa3(l2_xyz, l2_points, train)
+        l1_xyz, l1_points, Qmatrix1 = self.sa1(xyz, norm, train)
+        l2_xyz, l2_points, Qmatrix2 = self.sa2(l1_xyz, l1_points, train)
+        l3_xyz, l3_points, Qmatrix3 = self.sa3(l2_xyz, l2_points, train)
+        #print("--------------")
+        #print("Report:")
+        #print(Qmatrix1.shape)
+        #print(Qmatrix2.shape)
+        #print(Qmatrix3.shape)
+        #print("--------------")
+
         x = l3_points.view(B, 1024)
         x = self.drop1(F.relu(self.bn1(self.fc1(x))))
         x = self.drop2(F.relu(self.bn2(self.fc2(x))))

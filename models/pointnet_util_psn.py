@@ -170,11 +170,11 @@ class PointNetSetAbstraction(nn.Module):
         xyz = xyz.permute(0, 2, 1)
         if points is not None:
             points = points.permute(0, 2, 1)
-
+        Qmatrix = torch.tensor(0)
         if self.group_all:
             new_xyz, new_points = sample_and_group_all(xyz, points)
         else:
-            sampled_points, grouped_points, sampled_feature, grouped_feature = self.sampling(xyz,points,train)
+            sampled_points, grouped_points, sampled_feature, grouped_feature, Qmatrix = self.sampling(xyz,points,train)
             
             new_xyz, new_points = sample_and_group_psn(
                 self.npoint, sampled_points, grouped_points, sampled_feature, grouped_feature, self.nsample)
@@ -187,7 +187,7 @@ class PointNetSetAbstraction(nn.Module):
 
         new_points = torch.max(new_points, 2)[0]
         new_xyz = new_xyz.permute(0, 2, 1)
-        return new_xyz, new_points
+        return new_xyz, new_points, Qmatrix
 
 
 class PointNetFeaturePropagation(nn.Module):
